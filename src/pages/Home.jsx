@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [themes, setThemes] = useState([]);
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchThemes = async () => {
       const snapshot = await getDocs(collection(db, "themes"));
@@ -20,7 +22,7 @@ function Home() {
   }, []);
 
   return (
-    <main  className="rounded-3xl pt-2 py-10 bg-white p-8 shadow-sm">
+    <main className="rounded-3xl pt-2 py-10 bg-white p-8 shadow-sm">
       <h2 className="mb-8 text-2xl font-bold text-gray-900">Theme</h2>
       <div className="grid grid-cols-1 justify-items-center gap-10 sm:grid-cols-2 lg:grid-cols-4">
         {themes.map((theme) => (
@@ -28,6 +30,7 @@ function Home() {
             key={theme.id}
             type="button"
             className="group flex flex-col items-center text-center"
+            onClick={() => navigate(`/themes/${theme.id}`)}
           >
             <div
               className="
@@ -60,7 +63,7 @@ function Home() {
           </button>
         ))}
       </div>
-    </main >
+    </main>
   );
 }
 

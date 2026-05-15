@@ -8,18 +8,22 @@ import UserManagement from "../pages/Admin/UserManagement";
 import LoginPage from "../pages/LoginPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
 import ContactUs from "../pages/ContactUs";
+import ThemePage from "../pages/Themes";
+import { useNavigate } from "react-router-dom";
 
 function AppRoutes() {
+
+  const navigate = useNavigate();
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/admin/content" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/change-password" element={<ChangePasswordPage />} />
 
-
       <Route element={<UserLayout />}>
         <Route path="/home" element={<Home />} />
-         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/themes/:themeId" element={<ThemePage />} />
+        <Route path="/contact" element={<ContactUs />} />
       </Route>
 
       <Route
