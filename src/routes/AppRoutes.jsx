@@ -7,7 +7,7 @@ import AdminDashboard from "../pages/Admin/AdminDashboard";
 import UserManagement from "../pages/Admin/UserManagement";
 import LoginPage from "../pages/LoginPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
-
+import ContactUs from "../pages/ContactUs";
 
 function AppRoutes() {
   return (
@@ -19,6 +19,7 @@ function AppRoutes() {
 
       <Route element={<UserLayout />}>
         <Route path="/home" element={<Home />} />
+         <Route path="/contact" element={<ContactUs />} />
       </Route>
 
       <Route
