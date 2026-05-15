@@ -1,0 +1,51 @@
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: #f3f4f6;
+  padding: 20px;
+}
+
+.sidebar .active {
+  background: #ddd;
+  border-radius: 10px;
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+.topbar {
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+
+.upload-box {
+  margin-top: 20px;
+  border: 2px dashed #ccc;
+  padding: 40px;
+  text-align: center;
+  border-radius: 12px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}

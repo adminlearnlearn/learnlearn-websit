@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+
+body {
+  margin: 0;
+  font-family: "Roboto", Arial, sans-serif;
+
+}
+
+#root {
+  min-height: 100vh;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@layer components {
+
+  /* Button.css */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply px-5 py-2.5 rounded-xl border bg-blue-600 text-white hover:bg-blue-700 font-bold;
+  }
+
+  .btn-secondary {
+    @apply px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 font-bold;
+  }
+
+  .btn-outline {
+    @apply px-5 py-2.5 rounded-xl border border-blue-600 bg-white text-blue-600 hover:bg-blue-50 font-bold;
+  }
+
+  .btn-danger {
+    @apply px-5 py-2.5 rounded-xl border bg-red-500 text-white hover:bg-red-600 font-bold;
+  }
+
+  .btn-add {
+    @apply relative flex h-10 w-[140px] items-center overflow-hidden rounded-lg border border-gray-400 bg-white px-5 transition-all duration-300;
+  }
+
+  .btn-add__text {
+    @apply font-semibold text-gray-600 transition-all duration-300;
+  }
+
+  .btn-add__icon {
+    @apply absolute left-[72px] flex items-center justify-center transition-all duration-300;
+  }
+
+  .btn-add__svg {
+    @apply w-5 stroke-gray-600 transition-all duration-300;
+  }
+
+  .btn-add:hover {
+    @apply bg-gray-600;
+  }
+
+  .btn-add:hover .btn-add__text {
+    @apply text-transparent;
+  }
+
+  .btn-add:hover .btn-add__icon {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .btn-add:hover .btn-add__svg {
+    @apply stroke-white;
+  }
+
+  .btn-add:disabled:hover {
+    @apply cursor-not-allowed border-gray-100 bg-gray-50;
+  }
+
+  .btn-add:disabled .btn-add__text {
+    @apply text-gray-300;
+  }
+
+  .btn-add:disabled .btn-add__svg {
+    @apply stroke-gray-300;
+  }
+
+  .btn-add:disabled:hover .btn-add__icon {
+    left: 72px;
+    transform: none;
+  }
+
+  .btn-add:active {
+    transform: scale(0.97);
+  }
+
+  .close-btn {
+    @apply w-[50px] h-[50px] rounded-full bg-gray-50 flex items-center justify-center cursor-pointer relative text-gray-500 transition-all duration-300 shadow-sm hover:bg-red-100 hover:text-red-500;
+  }
+
+  /* upload */
+
+  .upload-container {
+    @apply w-full max-w-[380px] h-[360px] rounded-2xl shadow-lg flex flex-col justify-between p-3 bg-slate-50 border border-slate-200;
+  }
+
+  .upload-header {
+    @apply flex-1 w-full border-2 border-dashed border-blue-500 rounded-xl flex flex-col items-center justify-center text-center gap-4 px-6 hover:bg-blue-50 transition;
+  }
+
+  .upload-text {
+    @apply text-center;
+  }
+
+  .upload-text p {
+    @apply text-lg font-semibold text-slate-700;
+  }
+
+  .upload-subtext {
+    @apply text-sm text-slate-400;
+  }
+
+  .upload-header svg {
+    @apply h-24 w-24;
+  }
+
+  .upload-header p {
+    @apply text-base font-medium text-slate-700;
+  }
+
+  .upload-footer {
+    @apply bg-blue-50 w-full h-12 px-3 mt-2 rounded-xl flex items-center justify-between cursor-pointer border border-blue-100;
+  }
+
+  .upload-footer p {
+    @apply flex-1 text-center text-sm text-slate-700 truncate;
+  }
+
+  .file-icon {
+    @apply h-5 w-5 fill-blue-600;
+  }
+
+  .delete-btn {
+    @apply flex items-center justify-center;
+  }
+
+  .delete-icon {
+    @apply h-5 w-5 text-red-500 hover:scale-110 hover:text-red-500 transition;
+
+  }
+
+  .drag-active {
+    @apply border-blue-600 bg-blue-50 scale-[1.01];
+  }
+
+  .container {
+    --color: #a5a5b0;
+    --size: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    font-size: var(--size);
+    user-select: none;
+    fill: var(--color);
+  }
+
+  .container .clipboard {
+    position: absolute;
+    animation: keyframes-fill .5s;
+  }
+
+  .container .clipboard-check {
+    position: absolute;
+    display: none;
+    animation: keyframes-fill .5s;
+  }
+
+  /* ------ On check event ------ */
+  .container input:checked~.clipboard {
+    display: none;
+  }
+
+  .container input:checked~.clipboard-check {
+    display: block;
+  }
+
+  /* ------ Hide the default checkbox ------ */
+  .container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+  /* ------ Animation ------ */
+  @keyframes keyframes-fill {
+    0% {
+      transform: rotate(0deg) scale(0);
+      opacity: 0;
+    }
+
+    50% {
+      transform: rotate(-10deg) scale(1.2);
+    }
+  }
+
+
+}
