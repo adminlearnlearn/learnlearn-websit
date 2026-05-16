@@ -9,15 +9,15 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase";
 
-import DeactivateUserModal from "../../components/admin/users/DeactivateUserModal";
-import ResetAccountModal from "../../components/admin/users/ResetAccountModal";
+import DeactivateUserModal from "../../components/admin/users/modals/DeactivateUserModal";
+import ResetAccountModal from "../../components/admin/users/modals/ResetAccountModal";
 import UserSummaryCard from "../../components/admin/users/UserSummaryCard";
 import UserTable from "../../components/admin/users/UserTable";
 import UserDetail from "../../components/admin/users/UserDetail";
-import AddUserModal from "../../components/admin/users/AddUserModal";
-import EditUserModal from "../../components/admin/users/EditUserModal";
-import SuccessModal from "../../components/admin/users/SuccessModal";
-import GeneratePasswordModal from "../../components/admin/users/GeneratePasswordModal";
+import AddUserModal from "../../components/admin/users/modals/AddUserModal";
+import EditUserModal from "../../components/admin/users/modals/EditUserModal";
+import SuccessModal from "../../components/common/SuccessModal";
+import GeneratePasswordModal from "../../components/admin/users/modals/GeneratePasswordModal";
 
 function UserManagement() {
   const [successMessage, setSuccessMessage] = useState("");

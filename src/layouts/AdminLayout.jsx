@@ -1,9 +1,21 @@
 import { useState } from "react";
-import Sidebar from "../components/admin/Sidebar";
-import Topbar from "../components/admin/Topbar";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/admin/navigation/Sidebar";
+import Topbar from "../components/admin/navigation/Topbar";
+import LogoutModal from "../components/common/LogoutModal";
 
 function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    sessionStorage.clear();
+
+    setShowLogoutModal(false);
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 md:flex">
@@ -19,7 +31,10 @@ function AdminLayout({ children }) {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <Sidebar onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar
+          onClose={() => setIsSidebarOpen(false)}
+          onLogout={() => setShowLogoutModal(true)}
+        />
       </aside>
 
       <div className="min-w-0 flex-1">
@@ -28,6 +43,12 @@ function AdminLayout({ children }) {
           <div className="max-w-10xl mx-auto">{children}</div>
         </main>
       </div>
+      {showLogoutModal && (
+        <LogoutModal
+          onClose={() => setShowLogoutModal(false)}
+          onConfirm={handleLogout}
+        />
+      )}
     </div>
   );
 }

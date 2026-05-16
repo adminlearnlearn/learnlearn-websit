@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ContentForm from "../../components/admin/ContentForm";
+import ContentForm from "../../components/admin/content/ContentForm";
 import {
   addDoc,
   collection,

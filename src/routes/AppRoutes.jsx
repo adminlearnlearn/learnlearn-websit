@@ -9,47 +9,50 @@ import LoginPage from "../pages/LoginPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
 import ContactUs from "../pages/ContactUs";
 import ThemePage from "../pages/Themes";
-import { useNavigate } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
 
-  const navigate = useNavigate();
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/admin/content" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/change-password" element={<ChangePasswordPage />} />
 
-      <Route element={<UserLayout />}>
-        <Route path="/home" element={<Home />} />
-        <Route path="/themes/:themeId" element={<ThemePage />} />
-        <Route path="/contact" element={<ContactUs />} />
+      <Route element={<ProtectedRoute allowedRoles={["Teacher"]} />}>
+        <Route element={<UserLayout />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/themes/:themeId" element={<ThemePage />} />
+          <Route path="/contact" element={<ContactUs />} />
+        </Route>
       </Route>
 
-      <Route
-        path="/admin/dashboard"
-        element={
-          <AdminLayout>
-            <AdminDashboard />
-          </AdminLayout>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <AdminLayout>
-            <UserManagement />
-          </AdminLayout>
-        }
-      />
-      <Route
-        path="/admin/content"
-        element={
-          <AdminLayout>
-            <ContentManagement />
-          </AdminLayout>
-        }
-      ></Route>
+      <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminLayout>
+              <UserManagement />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/admin/content"
+          element={
+            <AdminLayout>
+              <ContentManagement />
+            </AdminLayout>
+          }
+        ></Route>
+      </Route>
     </Routes>
   );
 }

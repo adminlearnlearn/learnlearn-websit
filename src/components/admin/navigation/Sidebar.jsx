@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 
-function Sidebar({ onClose }) {
+function Sidebar({ onClose , onLogout }) {
   return (
     <aside className="w-64 bg-white min-h-screen p-5 flex flex-col border-r border-slate-200">
       {/* Logo */}
@@ -55,7 +55,11 @@ function Sidebar({ onClose }) {
           Content Management
         </NavLink>
         {/* Logout */}
-        <button className="rounded-2xl px-4 py-3 text-left text-red-500 hover:bg-red-50 hover:translate-x-1">
+        <button
+          type="button"
+          onClick={onLogout}
+          className="rounded-2xl px-4 py-3 text-left text-red-500 hover:bg-red-50 hover:translate-x-1"
+        >
           Logout
         </button>
       </nav>

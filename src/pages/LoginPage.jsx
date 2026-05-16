@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import {
   collection,
@@ -19,7 +19,7 @@ function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const MAX_FAILED_LOGIN = 3;
-  const userId = location.state?.userId;
+  const location = useLocation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -64,6 +64,16 @@ function LoginPage() {
           failedLoginCount: 0,
           isLocked: false,
         });
+
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            username: user.username,
+          }),
+        );
         navigate("/change-password", {
           state: {
             userId: user.id,
@@ -79,6 +89,16 @@ function LoginPage() {
           isLocked: false,
           lastLoginAt: new Date(),
         });
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            username: user.username,
+          }),
+        );
+
         goToHomeByRole(user);
         return;
       }
@@ -92,9 +112,9 @@ function LoginPage() {
   };
   const goToHomeByRole = (user) => {
     if (user.role === "Admin") {
-      navigate("/admin/content");
+      navigate("/admin/content", { replace: true });
     } else if (user.role === "Teacher") {
-      navigate("/home");
+      navigate("/home", { replace: true });
     }
   };
   const lockAccount = async (userId) => {
