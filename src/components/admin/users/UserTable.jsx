@@ -55,9 +55,9 @@ function UserTable({ users, onAddUser, onSelectUser }) {
           </thead>
 
           <tbody>
-            {users.map((user) => (
+            {users.map((user , index ) => (
               <tr
-                key={user.id}
+                key={`${user.id}-${index}`}
                 onClick={() => {
                   // console.log("selected user:", user);
                   onSelectUser(user);
@@ -66,9 +66,9 @@ function UserTable({ users, onAddUser, onSelectUser }) {
               >
                 <td className="py-3 px-4 flex items-center gap-6">
                   <div className="w-9 h-9 rounded-full bg-gray-800 text-white flex items-center justify-center">
-                    {user.username?.charAt(0).toUpperCase()}
+                    {user.name?.charAt(0).toUpperCase()}
                   </div>
-                  <span className="font-semibold">{user.username}</span>
+                  <span className="font-semibold">{user.name}</span>
                 </td>
 
                 <td className="py-3 px-4 font-semibold">{user.school}</td>

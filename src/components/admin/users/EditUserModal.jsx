@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 function EditUserModal({ user, onClose, onSave }) {
-  const [name, setName] = useState(user.username);
+  const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [school, setSchool] = useState(user.school);
 
@@ -13,7 +13,7 @@ function EditUserModal({ user, onClose, onSave }) {
 
     onSave({
       ...user,
-      username: name,
+      name: name,
        email: email.trim(),
       school,
     });

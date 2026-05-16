@@ -44,7 +44,7 @@ function UserManagement() {
       const userRef = doc(db, "users", updatedUser.id);
 
       await updateDoc(userRef, {
-        username: updatedUser.username,
+        name: updatedUser.name,
         email: updatedUser.email,
         school: updatedUser.school,
         isLocked: false,
@@ -90,7 +90,7 @@ function UserManagement() {
   const handleSaveUser = async (userData) => {
     try {
       const docRef = await addDoc(collection(db, "users"), {
-        username: userData.name,
+        name: userData.name,
         email: userData.email,
         school: userData.school,
         role: userData.role,
@@ -109,7 +109,7 @@ function UserManagement() {
         ...prev,
         {
           id: docRef.id,
-          username: userData.name,
+          name: userData.name,
           email: userData.email,
           school: userData.school,
           role: userData.role,
@@ -208,7 +208,7 @@ function UserManagement() {
     const userRef = doc(db, "users", selectedUser.id);
 
     await updateDoc(userRef, {
-      username: selectedUser.username,
+      name: selectedUser.name,
       tempPassword: generatedPassword,
       mustChangePassword: true,
       isLocked: false,
