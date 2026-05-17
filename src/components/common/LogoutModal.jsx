@@ -5,7 +5,7 @@ function LogoutModal({ onClose, onConfirm }) {
       <div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-xl">
         <div className="mb-10 flex items-start justify-between gap-4">
           <h2 className="text-2xl font-bold text-gray-900">
-            Are you sure you want to log out?
+            Are you sure you want to logout?
           </h2>
 
           <button

@@ -66,6 +66,9 @@ function Themes() {
         {subThemes.map((subTheme, index) => (
           <button
             key={subTheme.id}
+            onClick={() =>
+              navigate(`/themes/${themeId}/subthemes/${subTheme.id}`)
+            }
             type="button"
             className={`group flex flex-col items-center text-center
                         ${subThemes.length === 4 && index === 3 ? "col-start-2" : ""}

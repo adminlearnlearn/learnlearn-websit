@@ -9,10 +9,10 @@ import LoginPage from "../pages/LoginPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
 import ContactUs from "../pages/ContactUs";
 import ThemePage from "../pages/Themes";
+import SubThemePage from "../pages/SubThemePage";
 import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
-
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
@@ -23,6 +23,10 @@ function AppRoutes() {
         <Route element={<UserLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/themes/:themeId" element={<ThemePage />} />
+          <Route
+            path="/themes/:themeId/subthemes/:subThemeId"
+            element={<SubThemePage />}
+          />
           <Route path="/contact" element={<ContactUs />} />
         </Route>
       </Route>
