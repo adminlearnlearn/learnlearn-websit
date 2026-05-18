@@ -1,6 +1,14 @@
 import { Search, Plus } from "lucide-react";
 
-function UserTable({ users, onAddUser, onSelectUser }) {
+function UserTable({
+  users,
+  onAddUser,
+  onSelectUser,
+  searchText,
+  setSearchText,
+  statusFilter,
+  setStatusFilter,
+}) {
   const formatDate = (value) => {
     if (!value) return "-";
 
@@ -23,6 +31,8 @@ function UserTable({ users, onAddUser, onSelectUser }) {
         <div className="relative w-full md:w-[360px]">
           <input
             type="text"
+            values="searchText"
+            onChange={(e) => setSearchText(e.target.value)}
             placeholder="Search By Username School Status"
             className="w-full h-10 border border-gray-300 rounded-lg pl-4 pr-10 text-sm outline-none focus:ring-2 focus:ring-blue-400"
           />
@@ -31,8 +41,15 @@ function UserTable({ users, onAddUser, onSelectUser }) {
             className="absolute right-3 top-2.5 text-gray-700"
           />
         </div>
-
-        <button className="h-10 w-full md:w-auto px-6 ...">All Status</button>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="h-10 w-full md:w-auto rounded-lg border border-gray-300 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
         {/*Add User */}
         <button
           onClick={onAddUser}
@@ -55,7 +72,7 @@ function UserTable({ users, onAddUser, onSelectUser }) {
           </thead>
 
           <tbody>
-            {users.map((user , index ) => (
+            {users.map((user, index) => (
               <tr
                 key={`${user.id}-${index}`}
                 onClick={() => {

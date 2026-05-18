@@ -26,6 +26,7 @@ function UserManagement() {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
   const [users, setUsers] = useState([]);
+  const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -82,10 +83,18 @@ function UserManagement() {
     (user) => user.status === "inactive",
   ).length;
 
-  const filteredUsers =
-    statusFilter === "all"
-      ? users
-      : users.filter((user) => user.status === statusFilter);
+  const filteredUsers = users.filter((user) => {
+    const keyword = searchText.toLowerCase();
+
+    const matchSearch =
+      user.username?.toLowerCase().includes(keyword) ||
+      user.school?.toLowerCase().includes(keyword) ||
+      user.status?.toLowerCase().includes(keyword);
+
+    const matchStatus = statusFilter === "all" || user.status === statusFilter;
+
+    return matchSearch && matchStatus;
+  });
 
   const handleSaveUser = async (userData) => {
     try {
@@ -280,7 +289,12 @@ function UserManagement() {
           users={filteredUsers}
           onAddUser={() => setIsAddModalOpen(true)}
           onSelectUser={setSelectedUser}
+          searchText={searchText}
+          setSearchText={setSearchText}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
         />
+
         <UserDetail
           user={selectedUser}
           onEdit={() => setIsEditModalOpen(true)}

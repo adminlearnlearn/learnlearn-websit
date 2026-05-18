@@ -80,7 +80,7 @@ function ContentManagement() {
     (item) => item.themeId === selectedTheme,
   );
 
-  const handleSave = async () => {
+  const handleSave = async ({ contentFile, showNote, note }) => {
     // console.log("SAVE CLICK");
     if (!contentTitle.trim()) {
       alert("Please enter content title");
@@ -100,6 +100,8 @@ function ContentManagement() {
         type: contentType,
         themeId: selectedTheme,
         subThemeId: selectedSubTheme,
+        showNote,
+        note: showNote ? note : "",
         createdAt: serverTimestamp(),
       });
       // console.log("SAVED TO FIREBASE:", docRef.id);

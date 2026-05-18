@@ -120,6 +120,13 @@ function SubThemePage() {
                     <h3 className="text-lg font-bold text-gray-900">
                       {content.title}
                     </h3>
+                    {content.showNote && content.note && (
+                      <div className="mt-3 px-3 py-2">
+                        <p className="text-xs font-medium text-red-600">
+                          {content.note}
+                        </p>
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>

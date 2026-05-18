@@ -35,6 +35,8 @@ function ContentForm({
   const [newSubThemeName, setNewSubThemeName] = useState("");
   const [editThemeName, setEditThemeName] = useState("");
   const [editSubThemeName, setEditSubThemeName] = useState("");
+  const [showNote, setShowNote] = useState(false);
+  const [note, setNote] = useState("");
 
   const handleUpdateTheme = async () => {
     if (!selectedTheme || !editThemeName.trim()) return;
@@ -224,6 +226,27 @@ function ContentForm({
               </div>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <input
+              type="checkbox"
+              checked={showNote}
+              onChange={(e) => setShowNote(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <label className="text-sm font-semibold text-gray-700">
+              Note / Warning
+            </label>
+            {showNote && (
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Enter note or warning..."
+                rows={3}
+                className="w-full rounded-2xl border border-gray-300 px-4 py-3 outline-none focus:border-red-400"
+              />
+            )}
+          </div>
         </div>
 
         {/* UploadBox */}
@@ -238,7 +261,13 @@ function ContentForm({
         <div className="flex flex-col sm:flex-row justify-end gap-4">
           <button
             type="button"
-            onClick={handleSave}
+            onClick={() =>
+              handleSave({
+                contentFile,
+                showNote,
+                note,
+              })
+            }
             className="btn-primary"
             data-testid="save-draft-btn"
           >
@@ -269,7 +298,7 @@ function ContentForm({
       {showPreview && contentFile && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <h2 className="text-xl font-semibold">Preview Content</h2>
-          <div className="bg-white p-4 rounded-2xl  w-[95vw] max-w-5xl" >
+          <div className="bg-white p-4 rounded-2xl  w-[95vw] max-w-5xl">
             {/* Image Preview */}
             {contentFile.type.startsWith("image/") && (
               <img
@@ -286,16 +315,15 @@ function ContentForm({
                 className="w-full h-[85vh] rounded-xl"
               />
             )}
-            
+
             <div className="flex justify-end mb-3">
               <button
-              onClick={() => setShowPreview(false)}
-              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg"
-            >
-              Close
-            </button>
+                onClick={() => setShowPreview(false)}
+                className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg"
+              >
+                Close
+              </button>
             </div>
-            
           </div>
         </div>
       )}
