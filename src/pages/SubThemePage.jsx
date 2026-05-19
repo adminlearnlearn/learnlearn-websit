@@ -16,6 +16,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../firebase";
+import Loader from "../components/common/loader";
 
 function SubThemePage() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ function SubThemePage() {
 
   const [subTheme, setSubTheme] = useState(null);
   const [contents, setContents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,10 +51,21 @@ function SubThemePage() {
       }));
 
       setContents(contentList);
+      // setTimeout(() => {
+      setLoading(false);
+      // }, 1200);
     };
 
     fetchData();
   }, [themeId, subThemeId]);
+
+  if (loading) {
+    return (
+      <div className="transition-opacity duration-500 opacity-100">
+        <Loader />
+      </div>
+    );
+  }
 
   const getIcon = (type) => {
     if (type === "story") return <PlayCircle size={42} />;
@@ -70,7 +83,7 @@ function SubThemePage() {
   };
 
   return (
-    <main className="rounded-[2.5rem] bg-white p-10 min-h-[calc(100vh-120px)]">
+    <main className="animate-fadeIn rounded-[2.5rem] bg-white p-10 min-h-[calc(100vh-120px)]">
       <div className="mx-auto mb-12 flex max-w-6xl items-center gap-3">
         <button
           type="button"

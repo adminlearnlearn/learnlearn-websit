@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Image as ImageIcon } from "lucide-react";
+import Loader from "../components/common/loader";
 import {
   collection,
   doc,
@@ -17,35 +18,39 @@ function Themes() {
 
   const [theme, setTheme] = useState(null);
   const [subThemes, setSubThemes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSubThemes = async () => {
       const themeSnap = await getDoc(doc(db, "themes", themeId));
-
       if (themeSnap.exists()) {
         setTheme({ id: themeSnap.id, ...themeSnap.data() });
       }
-
       const subThemeQuery = query(
         collection(db, "subThemes"),
         where("themeId", "==", themeId),
       );
-
       const subThemeSnap = await getDocs(subThemeQuery);
-
       const subThemeList = subThemeSnap.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-
       setSubThemes(subThemeList);
+      setLoading(false);
+
     };
 
     fetchSubThemes();
   }, [themeId]);
-
+  if (loading) {
+    return (
+      <div className="transition-opacity duration-500 opacity-100">
+        <Loader />
+      </div>
+    );
+  }
   return (
-    <main className="rounded-[2.5rem] bg-white p-14 min-h-[calc(100vh-120px)]">
+    <main className=" animate-fadeIn rounded-[2.5rem] bg-white p-14 min-h-[calc(100vh-120px)]">
       {/* Header */}
       <div className="mx-auto mb-14 flex max-w-6xl items-center gap-3">
         <button
