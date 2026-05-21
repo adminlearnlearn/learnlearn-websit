@@ -5,6 +5,8 @@ import SubThemeModal from "./SubThemeModal";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { Pencil } from "lucide-react";
+import FormError from "../../common/FormError";
+
 
 function ContentForm({
   contentTitle,
@@ -37,7 +39,7 @@ function ContentForm({
   const [editSubThemeName, setEditSubThemeName] = useState("");
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState("");
-
+  const [errors, setErrors] = useState({});
   const handleUpdateTheme = async () => {
     if (!selectedTheme || !editThemeName.trim()) return;
 
@@ -87,10 +89,16 @@ function ContentForm({
               placeholder="Enter content title"
               value={contentTitle}
               onChange={(e) => {
-                // console.log("setContentTitle =", setContentTitle);
                 setContentTitle(e.target.value);
+                if (errors.title) {
+                  setErrors((prev) => ({
+                    ...prev,
+                    title: "",
+                  }));
+                }
               }}
             />
+            <FormError message={errors.title} />
           </div>
           {/* Theme */}
           <div className="md:col-span-1">
@@ -146,6 +154,7 @@ function ContentForm({
                 </span>
               </button>
             </div>
+            <FormError message={errors.theme} />
           </div>
           {/*   Sub Theme */}
           <div className="md:col-span-1 ">
@@ -203,6 +212,7 @@ function ContentForm({
                 </span>
               </button>
             </div>
+            <FormError message={errors.subTheme} />
           </div>
 
           {/* // Content Type */}
@@ -225,6 +235,7 @@ function ContentForm({
                 </select>
               </div>
             </div>
+            <FormError message={errors.type} />
           </div>
 
           <div className="space-y-2">
@@ -250,24 +261,50 @@ function ContentForm({
         </div>
 
         {/* UploadBox */}
-        <div className="w-full flex justify-center mt-10 mb-6">
-          <UploadBox
-            contentFile={contentFile}
-            setContentFile={setContentFile}
-          />
+        <div className="mt-10 mb-6">
+          <div className="flex justify-center">
+            <UploadBox
+              contentFile={contentFile}
+              setContentFile={setContentFile}
+            />
+          </div>
+          <FormError message={errors.file} />
         </div>
 
         {/* buutton */}
         <div className="flex flex-col sm:flex-row justify-end gap-4">
           <button
             type="button"
-            onClick={() =>
+            onClick={() => {
+              const newErrors = {};
+
+              if (!contentTitle.trim()) {
+                newErrors.title = "Please enter content title";
+              }
+              if (!selectedTheme) {
+                newErrors.theme = "Please select theme";
+              }
+              if (!selectedSubTheme) {
+                newErrors.subTheme = "Please select sub theme";
+              }
+              if (!contentType) {
+                newErrors.type = "Please select content type";
+              }
+
+              if (!contentFile) {
+                newErrors.file = "Please upload content file";
+              }
+
+              setErrors(newErrors);
+
+              if (Object.keys(newErrors).length > 0) return;
+
               handleSave({
                 contentFile,
                 showNote,
                 note,
-              })
-            }
+              });
+            }}
             className="btn-primary"
             data-testid="save-draft-btn"
           >

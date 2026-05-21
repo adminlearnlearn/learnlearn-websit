@@ -11,6 +11,7 @@ import ContactUs from "../pages/ContactUs";
 import ThemePage from "../pages/Themes";
 import SubThemePage from "../pages/SubThemePage";
 import ProtectedRoute from "./ProtectedRoute";
+import LearningContent from "../pages/LearningContent";
 
 function AppRoutes() {
   return (
@@ -26,6 +27,10 @@ function AppRoutes() {
           <Route
             path="/themes/:themeId/subthemes/:subThemeId"
             element={<SubThemePage />}
+          />
+          <Route
+            path="/themes/:themeId/subthemes/:subThemeId/contents/:contentId"
+            element={<LearningContent />}
           />
           <Route path="/contact" element={<ContactUs />} />
         </Route>

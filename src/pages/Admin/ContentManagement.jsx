@@ -9,6 +9,7 @@ import {
 import { db } from "../../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../firebase";
+import { deleteDoc, doc } from "firebase/firestore";
 
 function ContentManagement() {
   const [contentTitle, setContentTitle] = useState("");
@@ -80,6 +81,18 @@ function ContentManagement() {
     (item) => item.themeId === selectedTheme,
   );
 
+  const handleDeleteContent = async (contentId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this content?",
+    );
+
+    if (!confirmDelete) return;
+
+    await deleteDoc(doc(db, "contents", contentId));
+
+    setContents((prev) => prev.filter((content) => content.id !== contentId));
+  };
+
   const handleSave = async ({ contentFile, showNote, note }) => {
     // console.log("SAVE CLICK");
     if (!contentTitle.trim()) {
@@ -143,7 +156,10 @@ function ContentManagement() {
         contentFile={contentFile}
         setContentFile={setContentFile}
       />
+      
     </div>
+    
+    
   );
 }
 

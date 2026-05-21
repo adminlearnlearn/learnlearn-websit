@@ -51,9 +51,7 @@ function SubThemePage() {
       }));
 
       setContents(contentList);
-      // setTimeout(() => {
       setLoading(false);
-      // }, 1200);
     };
 
     fetchData();
@@ -116,6 +114,11 @@ function SubThemePage() {
                   <button
                     key={content.id}
                     type="button"
+                    onClick={() =>
+                      navigate(
+                        `/themes/${themeId}/subthemes/${subThemeId}/contents/${content.id}`,
+                      )
+                    }
                     className="group rounded-3xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                   >
                     <div className="mb-5 flex h-36 items-center justify-center rounded-2xl bg-gray-100 text-gray-400 group-hover:text-indigo-500">
