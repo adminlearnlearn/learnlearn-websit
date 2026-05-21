@@ -12,6 +12,7 @@ import ThemePage from "../pages/Themes";
 import SubThemePage from "../pages/SubThemePage";
 import ProtectedRoute from "./ProtectedRoute";
 import LearningContent from "../pages/LearningContent";
+import ManageContent from "../pages/Admin/ManageContent";
 
 function AppRoutes() {
   return (
@@ -58,6 +59,14 @@ function AppRoutes() {
           element={
             <AdminLayout>
               <ContentManagement />
+            </AdminLayout>
+          }
+        ></Route>
+        <Route
+          path="/admin/manage-content"
+          element={
+            <AdminLayout>
+              <ManageContent />
             </AdminLayout>
           }
         ></Route>

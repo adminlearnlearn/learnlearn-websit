@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 
-function Sidebar({ onClose , onLogout }) {
+function Sidebar({ onClose, onLogout }) {
   return (
     <aside className="w-64 bg-white min-h-screen p-5 flex flex-col border-r border-slate-200">
       {/* Logo */}
@@ -52,7 +52,20 @@ function Sidebar({ onClose , onLogout }) {
             }`
           }
         >
-          Content Management
+          Create Content
+        </NavLink>
+        {/* ManageContent */}
+        <NavLink
+          to="/admin/manage-content"
+          className={({ isActive }) =>
+            `block rounded-xl px-4 py-2 ${
+              isActive
+                ? "bg-blue-50 font-semibold text-blue-600"
+                : "text-gray-600 hover:bg-gray-100 hover:translate-x-1"
+            }`
+          }
+        >
+          Manage Content
         </NavLink>
         {/* Logout */}
         <button
