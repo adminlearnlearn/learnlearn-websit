@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import ViewContentModal from "../../components/admin/users/modals/ViewContentModal";
+import { useNavigate } from "react-router-dom";
 
 function ManageContent() {
   const [contents, setContents] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedContent, setSelectedContent] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchContents = async () => {
@@ -111,6 +116,10 @@ function ManageContent() {
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
+                      onClick={() => {
+                        setSelectedContent(content);
+                        setShowViewModal(true);
+                      }}
                       className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100"
                     >
                       View
@@ -118,6 +127,9 @@ function ManageContent() {
 
                     <button
                       type="button"
+                      onClick={() =>
+                        navigate(`/admin/manage-content/edit/${content.id}`)
+                      }
                       className="rounded-xl border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50"
                     >
                       Edit
@@ -154,6 +166,15 @@ function ManageContent() {
           </tbody>
         </table>
       </div>
+      {showViewModal && (
+        <ViewContentModal
+          content={selectedContent}
+          onClose={() => {
+            setSelectedContent(null);
+            setShowViewModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
