@@ -1,25 +1,34 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { db } from "../../firebase";
 
 function EditContent() {
+  const [fileUrl, setFileUrl] = useState("");
   const { contentId } = useParams();
   const navigate = useNavigate();
-
   const [title, setTitle] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("draft");
-  const [note, setNote] = useState("");
-  const [showNote, setShowNote] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState("");
   const [selectedSubTheme, setSelectedSubTheme] = useState("");
   const [themes, setThemes] = useState([]);
   const [subThemes, setSubThemes] = useState([]);
+  const [showNote, setShowNote] = useState(false);
+  const [note, setNote] = useState("");
 
   useEffect(() => {
-    const fetchContent = async () => {
+    const fetchData = async () => {
       const contentSnap = await getDoc(doc(db, "contents", contentId));
+      const themeSnap = await getDocs(collection(db, "themes"));
 
       if (contentSnap.exists()) {
         const data = contentSnap.data();
@@ -27,23 +36,56 @@ function EditContent() {
         setTitle(data.title || "");
         setType(data.type || "");
         setStatus(data.status || "draft");
-        setNote(data.note || "");
-        setShowNote(data.showNote || false);
         setSelectedTheme(data.themeId || "");
         setSelectedSubTheme(data.subThemeId || "");
+        setShowNote(data.showNote || false);
+        setNote(data.note || "");
       }
+
+      const themeList = themeSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setThemes(themeList);
     };
 
-    fetchContent();
+    fetchData();
   }, [contentId]);
+
+  useEffect(() => {
+    const fetchSubThemes = async () => {
+      if (!selectedTheme) {
+        setSubThemes([]);
+        return;
+      }
+
+      const subThemeQuery = query(
+        collection(db, "subThemes"),
+        where("themeId", "==", selectedTheme),
+      );
+
+      const subThemeSnap = await getDocs(subThemeQuery);
+
+      const subThemeList = subThemeSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setSubThemes(subThemeList);
+    };
+
+    fetchSubThemes();
+  }, [selectedTheme]);
 
   const handleUpdate = async () => {
     await updateDoc(doc(db, "contents", contentId), {
       title,
       type,
+      status,
       themeId: selectedTheme,
       subThemeId: selectedSubTheme,
-      status,
+      fileUrl,
       showNote,
       note: showNote ? note : "",
     });
@@ -55,8 +97,8 @@ function EditContent() {
     <div className="rounded-3xl bg-white p-8 shadow-sm">
       <h1 className="mb-6 text-2xl font-bold text-gray-900">Edit Content</h1>
 
-      <div className="grid gap-5">
-        <div>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="md:col-span-2">
           <label className="mb-1 block text-sm font-medium text-gray-600">
             Content Title
           </label>
@@ -65,6 +107,46 @@ function EditContent() {
             onChange={(e) => setTitle(e.target.value)}
             className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none focus:border-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-600">
+            Theme
+          </label>
+          <select
+            value={selectedTheme}
+            onChange={(e) => {
+              setSelectedTheme(e.target.value);
+              setSelectedSubTheme("");
+            }}
+            className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none focus:border-blue-500"
+          >
+            <option value="">Select Theme</option>
+            {themes.map((theme) => (
+              <option key={theme.id} value={theme.id}>
+                {theme.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-600">
+            Sub Theme
+          </label>
+          <select
+            value={selectedSubTheme}
+            onChange={(e) => setSelectedSubTheme(e.target.value)}
+            disabled={!selectedTheme}
+            className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none disabled:bg-gray-100 focus:border-blue-500"
+          >
+            <option value="">Select Sub Theme</option>
+            {subThemes.map((subTheme) => (
+              <option key={subTheme.id} value={subTheme.id}>
+                {subTheme.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
@@ -99,7 +181,7 @@ function EditContent() {
           </select>
         </div>
 
-        <div>
+        <div className="md:col-span-2">
           <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
             <input
               type="checkbox"
@@ -114,24 +196,36 @@ function EditContent() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
+              placeholder="Enter note or warning..."
               className="mt-2 w-full rounded-2xl border border-gray-300 px-4 py-3 outline-none focus:border-red-400"
             />
           )}
         </div>
+      </div>
+      <div className="md:col-span-2">
+        <label className="mb-1 block text-sm font-medium text-gray-600">
+          Content File URL
+        </label>
 
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => navigate("/admin/manage-content")}
-            className="btn-secondary"
-          >
-            Cancel
-          </button>
+        <input
+          value={fileUrl}
+          onChange={(e) => setFileUrl(e.target.value)}
+          placeholder="/files/story1.mp4 or https://..."
+          className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none focus:border-blue-500"
+        />
+      </div>
+      <div className="mt-8 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={() => navigate("/admin/manage-content")}
+          className="btn-secondary"
+        >
+          Cancel
+        </button>
 
-          <button type="button" onClick={handleUpdate} className="btn-primary">
-            Update Content
-          </button>
-        </div>
+        <button type="button" onClick={handleUpdate} className="btn-primary">
+          Update Content
+        </button>
       </div>
     </div>
   );

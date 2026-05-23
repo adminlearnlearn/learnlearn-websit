@@ -5,28 +5,45 @@ import ViewContentModal from "../../components/admin/users/modals/ViewContentMod
 import { useNavigate } from "react-router-dom";
 
 function ManageContent() {
-  const [contents, setContents] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedContent, setSelectedContent] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [contents, setContents] = useState([]);
+  const [themes, setThemes] = useState([]);
+  const [subThemes, setSubThemes] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchContents = async () => {
-      const snapshot = await getDocs(collection(db, "contents"));
+    const fetchData = async () => {
+      const [contentSnap, themeSnap, subThemeSnap] = await Promise.all([
+        getDocs(collection(db, "contents")),
+        getDocs(collection(db, "themes")),
+        getDocs(collection(db, "subThemes")),
+      ]);
 
-      const contentList = snapshot.docs.map((doc) => ({
+      const contentList = contentSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const themeList = themeSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const subThemeList = subThemeSnap.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
 
       setContents(contentList);
+      setThemes(themeList);
+      setSubThemes(subThemeList);
     };
 
-    fetchContents();
+    fetchData();
   }, []);
-
   const handleToggleStatus = async (contentId, currentStatus) => {
     const newStatus = currentStatus === "published" ? "hidden" : "published";
 
@@ -84,20 +101,21 @@ function ManageContent() {
         <table className="w-full min-w-[800px] text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left">
+              <th className="px-4 py-3">Theme</th>
+              <th className="px-4 py-3">Sub Theme</th>
               <th className="px-4 py-3">Title</th>
               <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Action</th>
             </tr>
           </thead>
-
           <tbody>
             {filteredContents.map((content) => (
               <tr key={content.id} className="border-b hover:bg-blue-50">
+                <td className="px-4 py-4">{themes.find((theme) => theme.id === content.themeId)?.name || "-"}</td>
+                <td className="px-4 py-4">{subThemes.find((subtheme) =>subtheme.id===content.subThemeId)?.name || "-"}</td>
                 <td className="px-4 py-4 font-semibold">{content.title}</td>
-
                 <td className="px-4 py-4 capitalize">{content.type}</td>
-
                 <td className="px-4 py-4">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${

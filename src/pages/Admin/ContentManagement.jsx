@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ContentForm from "../../components/admin/content/ContentForm";
+import SuccessModal from "../../components/common/SuccessModal";
 import {
   addDoc,
   collection,
@@ -12,6 +13,7 @@ import { storage } from "../../firebase";
 import { deleteDoc, doc } from "firebase/firestore";
 
 function ContentManagement() {
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [contentTitle, setContentTitle] = useState("");
   const [contentType, setContentType] = useState("story");
   const [selectedTheme, setSelectedTheme] = useState("");
@@ -113,13 +115,17 @@ function ContentManagement() {
         type: contentType,
         themeId: selectedTheme,
         subThemeId: selectedSubTheme,
+        themeName:
+          themes.find((theme) => theme.id === selectedTheme)?.name || "",
+        subThemeName:
+          subThemes.find((sub) => sub.id === selectedSubTheme)?.name || "",
         showNote,
         note: showNote ? note : "",
         createdAt: serverTimestamp(),
+        status: "published",
       });
-      // console.log("SAVED TO FIREBASE:", docRef.id);
-      //  console.log("Saved Content ID:", docRef.id);
-      alert("Content saved successfully");
+
+      setShowSuccessModal(true);
 
       setContentTitle("");
       setContentType("story");
@@ -156,10 +162,14 @@ function ContentManagement() {
         contentFile={contentFile}
         setContentFile={setContentFile}
       />
-      
+      {showSuccessModal && (
+        <SuccessModal
+          title="Content Saved"
+          message="Content has been saved successfully."
+          onClose={() => setShowSuccessModal(false)}
+        />
+      )}
     </div>
-    
-    
   );
 }
 
