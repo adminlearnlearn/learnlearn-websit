@@ -11,6 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../firebase";
+import EmptyState from "../components/common/EmptyState";
 
 function Themes() {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ function Themes() {
   const [theme, setTheme] = useState(null);
   const [subThemes, setSubThemes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const hasSubThemes  = subThemes.length > 0;
+
 
   useEffect(() => {
     const fetchSubThemes = async () => {
@@ -37,7 +40,6 @@ function Themes() {
       }));
       setSubThemes(subThemeList);
       setLoading(false);
-
     };
 
     fetchSubThemes();
@@ -67,41 +69,48 @@ function Themes() {
       </div>
 
       {/* Grid */}
-      <div className="grid max-w-5xl grid-cols-3 gap-x-28 gap-y-14 justify-items-center">
-        {subThemes.map((subTheme, index) => (
-          <button
-            key={subTheme.id}
-            onClick={() =>
-              navigate(`/themes/${themeId}/subthemes/${subTheme.id}`)
-            }
-            type="button"
-            className={`group flex flex-col items-center text-center
+      {!hasSubThemes  ? (
+        <EmptyState
+          title="No sub themes found"
+          message="There are no sub themes available for this theme yet."
+        />
+      ) : (
+        <div className="grid max-w-5xl grid-cols-3 gap-x-28 gap-y-14 justify-items-center">
+          {subThemes.map((subTheme, index) => (
+            <button
+              key={subTheme.id}
+              onClick={() =>
+                navigate(`/themes/${themeId}/subthemes/${subTheme.id}`)
+              }
+              type="button"
+              className={`group flex flex-col items-center text-center
                         ${subThemes.length === 4 && index === 3 ? "col-start-2" : ""}
                         ${subThemes.length === 5 && index === 3 ? "col-start-1 translate-x-24" : ""}
                         ${subThemes.length === 5 && index === 4 ? "col-start-3 -translate-x-24" : ""}
                         `}
-          >
-            {/* Card */}
-            <div className="flex h-36 w-36 items-center justify-center rounded-2xl border border-gray-300 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-              {subTheme.imageUrl ? (
-                <img
-                  src={subTheme.imageUrl}
-                  alt={subTheme.name}
-                  className="h-full w-full rounded-3xl object-cover"
-                />
-              ) : (
-                <div className="flex h-28 w-28 items-center justify-center bg-gray-200 text-gray-400">
-                  <ImageIcon size={54} />
-                </div>
-              )}
-            </div>
+            >
+              {/* Card */}
+              <div className="flex h-36 w-36 items-center justify-center rounded-2xl border border-gray-300 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+                {subTheme.imageUrl ? (
+                  <img
+                    src={subTheme.imageUrl}
+                    alt={subTheme.name}
+                    className="h-full w-full rounded-3xl object-cover"
+                  />
+                ) : (
+                  <div className="flex h-28 w-28 items-center justify-center bg-gray-200 text-gray-400">
+                    <ImageIcon size={54} />
+                  </div>
+                )}
+              </div>
 
-            <p className="mt-4 text-base font-bold text-gray-900">
-              {subTheme.name}
-            </p>
-          </button>
-        ))}
-      </div>
+              <p className="mt-4 text-base font-bold text-gray-900">
+                {subTheme.name}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
     </main>
   );
 }

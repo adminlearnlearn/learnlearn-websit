@@ -7,7 +7,6 @@ import { db } from "../../../firebase";
 import { Pencil } from "lucide-react";
 import FormError from "../../common/FormError";
 
-
 function ContentForm({
   contentTitle,
   setContentTitle,
@@ -31,8 +30,6 @@ function ContentForm({
   const [isSubThemeModalOpen, setIsSubThemeModalOpen] = useState(false);
   const [isEditThemeOpen, setIsEditThemeOpen] = useState(false);
   const [isEditSubThemeOpen, setIsEditSubThemeOpen] = useState(false);
-  const currentTheme = themes.find((t) => t.id === selectedTheme);
-  const currentSubTheme = subThemes.find((t) => t.id === selectedSubTheme);
   const [newThemeName, setNewThemeName] = useState("");
   const [newSubThemeName, setNewSubThemeName] = useState("");
   const [editThemeName, setEditThemeName] = useState("");
@@ -40,6 +37,9 @@ function ContentForm({
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const currentTheme = themes.find((t) => t.id === selectedTheme);
+  const currentSubTheme = subThemes.find((t) => t.id === selectedSubTheme);
   const handleUpdateTheme = async () => {
     if (!selectedTheme || !editThemeName.trim()) return;
 
@@ -304,9 +304,11 @@ function ContentForm({
                 showNote,
                 note,
               });
+              setShowSuccessModal(true);
             }}
             className="btn-primary"
             data-testid="save-draft-btn"
+            
           >
             <span>Save Draft</span>
           </button>
@@ -372,7 +374,6 @@ function ContentForm({
           setValue={setNewThemeName}
           onClose={() => setIsThemeModalOpen(false)}
           onSave={() => {
-            console.log("New = Theme:", newThemeName);
             if (!newThemeName.trim()) return;
             handleAddTheme(newThemeName.trim());
             setNewThemeName("");
@@ -399,7 +400,6 @@ function ContentForm({
           setValue={setNewSubThemeName}
           onClose={() => setIsSubThemeModalOpen(false)}
           onSave={() => {
-            console.log("New Sub Theme:", newSubThemeName);
             if (!newSubThemeName.trim()) return;
             handleAddSubTheme(newSubThemeName.trim());
             setNewSubThemeName("");

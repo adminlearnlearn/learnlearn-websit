@@ -10,6 +10,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../firebase";
+import FormError from "../../components/common/FormError";
 
 function EditContent() {
   const [fileUrl, setFileUrl] = useState("");
@@ -24,6 +25,7 @@ function EditContent() {
   const [subThemes, setSubThemes] = useState([]);
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,6 +81,17 @@ function EditContent() {
   }, [selectedTheme]);
 
   const handleUpdate = async () => {
+    const newErrors = {};
+    if (!title.trim()) newErrors.title = "Please enter content title";
+    if (!selectedTheme) newErrors.theme = "Please select theme";
+    if (!selectedSubTheme) newErrors.subTheme = "Please select sub theme";
+    if (!type) newErrors.type = "Please select content type";
+    if (!status) newErrors.status = "Please select status";
+    if (!fileUrl.trim()) newErrors.fileUrl = "Please enter content file URL";
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) return;
     await updateDoc(doc(db, "contents", contentId), {
       title,
       type,
@@ -107,6 +120,7 @@ function EditContent() {
             onChange={(e) => setTitle(e.target.value)}
             className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none focus:border-blue-500"
           />
+          <FormError message={errors.title} />
         </div>
 
         <div>
@@ -128,6 +142,7 @@ function EditContent() {
               </option>
             ))}
           </select>
+          <FormError message={errors.theme} />
         </div>
 
         <div>
@@ -147,6 +162,7 @@ function EditContent() {
               </option>
             ))}
           </select>
+          <FormError message={errors.subTheme} />
         </div>
 
         <div>
@@ -164,6 +180,7 @@ function EditContent() {
             <option value="worksheet">Worksheet</option>
             <option value="game">Game</option>
           </select>
+          <FormError message={errors.type} />
         </div>
 
         <div>
@@ -179,6 +196,7 @@ function EditContent() {
             <option value="published">Published</option>
             <option value="hidden">Hidden</option>
           </select>
+          <FormError message={errors.status} />
         </div>
 
         <div className="md:col-span-2">
@@ -213,6 +231,7 @@ function EditContent() {
           placeholder="/files/story1.mp4 or https://..."
           className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none focus:border-blue-500"
         />
+        <FormError message={errors.fileUrl} />
       </div>
       <div className="mt-8 flex justify-end gap-3">
         <button

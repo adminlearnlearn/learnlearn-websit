@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import Loader from "../components/common/loader";
+import EmptyState from "../components/common/EmptyState";
 
 function SubThemePage() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ function SubThemePage() {
   const [subTheme, setSubTheme] = useState(null);
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const hasContent = contents.length > 0;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +43,7 @@ function SubThemePage() {
         collection(db, "contents"),
         where("themeId", "==", themeId),
         where("subThemeId", "==", subThemeId),
+        where("status", "==", "published"),
       );
 
       const contentSnap = await getDocs(contentQuery);
@@ -94,62 +97,68 @@ function SubThemePage() {
           {subTheme?.name || "Sub Theme"}
         </h1>
       </div>
+      {!hasContent ? (
+        <EmptyState
+          title="No content found"
+          message="There is no published content in this sub theme yet."
+        />
+      ) : (
+        <div className=" mx-auto max-w-6xl space-y-16 pl-4 md:pl-18 ">
+          {Object.entries(groupedContents).map(([type, items]) => {
+            if (items.length === 0) return null;
 
-      <div className=" mx-auto max-w-6xl space-y-16 pl-4 md:pl-18 ">
-        {Object.entries(groupedContents).map(([type, items]) => {
-          if (items.length === 0) return null;
+            return (
+              <section key={type} className="max-w-5xl">
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="text-indigo-500">{getIcon(type)}</div>
 
-          return (
-            <section key={type} className="max-w-5xl">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="text-indigo-500">{getIcon(type)}</div>
+                  <h2 className="text-2xl font-bold uppercase text-gray-900">
+                    {type}
+                  </h2>
+                </div>
 
-                <h2 className="text-2xl font-bold uppercase text-gray-900">
-                  {type}
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                {items.map((content) => (
-                  <button
-                    key={content.id}
-                    type="button"
-                    onClick={() =>
-                      navigate(
-                        `/themes/${themeId}/subthemes/${subThemeId}/contents/${content.id}`,
-                      )
-                    }
-                    className="group rounded-3xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                  >
-                    <div className="mb-5 flex h-36 items-center justify-center rounded-2xl bg-gray-100 text-gray-400 group-hover:text-indigo-500">
-                      {content.thumbnailUrl ? (
-                        <img
-                          src={content.thumbnailUrl}
-                          alt={content.title}
-                          className="h-full w-full rounded-2xl object-cover"
-                        />
-                      ) : (
-                        getIcon(content.type)
-                      )}
-                    </div>
-
-                    <h3 className="text-lg font-bold text-gray-900">
-                      {content.title}
-                    </h3>
-                    {content.showNote && content.note && (
-                      <div className="mt-3 px-3 py-2">
-                        <p className="text-xs font-medium text-red-600">
-                          {content.note}
-                        </p>
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                  {items.map((content) => (
+                    <button
+                      key={content.id}
+                      type="button"
+                      onClick={() =>
+                        navigate(
+                          `/themes/${themeId}/subthemes/${subThemeId}/contents/${content.id}`,
+                        )
+                      }
+                      className="group rounded-3xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                    >
+                      <div className="mb-5 flex h-36 items-center justify-center rounded-2xl bg-gray-100 text-gray-400 group-hover:text-indigo-500">
+                        {content.thumbnailUrl ? (
+                          <img
+                            src={content.thumbnailUrl}
+                            alt={content.title}
+                            className="h-full w-full rounded-2xl object-cover"
+                          />
+                        ) : (
+                          getIcon(content.type)
+                        )}
                       </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {content.title}
+                      </h3>
+                      {content.showNote && content.note && (
+                        <div className="mt-3 px-3 py-2">
+                          <p className="text-xs font-medium text-red-600">
+                            {content.note}
+                          </p>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
     </main>
   );
 }
