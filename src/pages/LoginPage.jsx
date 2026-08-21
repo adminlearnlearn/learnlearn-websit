@@ -9,6 +9,7 @@ import {
   where,
   doc,
   updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -90,7 +91,9 @@ function LoginPage() {
         await updateDoc(doc(db, "users", user.id), {
           failedLoginCount: 0,
           isLocked: false,
-          lastLoginAt: new Date(),
+          lastLoginAt: serverTimestamp(),
+          lastSeenAt: serverTimestamp(),
+          isOnline: true,
         });
 
         localStorage.setItem(

@@ -33,7 +33,7 @@ function LearningContent() {
     );
   }
 
-  const gameUrl = content?.contentUrl?.trim() || content?.fileUrl?.trim() || "";
+  const gameUrl = content?.contentUrl?.trim() || content?.contentUrl?.trim() || "";
   return (
     <main className="rounded-[2.5rem] bg-white p-10 min-h-[calc(100vh-120px)]">
       <div className="mx-auto max-w-5xl">
@@ -69,13 +69,13 @@ function LearningContent() {
             <video
               controls
               className="w-full rounded-2xl bg-black"
-              src={content.fileUrl}
+              src={content.contentUrl}
             />
           )}
 
           {content.type === "worksheet" && (
             <iframe
-              src={content.fileUrl}
+              src={content.contentUrl}
               title={content.title}
               className="h-[75vh] w-full rounded-2xl bg-white"
             />

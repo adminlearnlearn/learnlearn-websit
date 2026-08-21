@@ -7,6 +7,7 @@ function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [contents, setContents] = useState([]);
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
+  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
     const unsubscribeUsers = onSnapshot(
@@ -38,10 +39,13 @@ function AdminDashboard() {
         console.error("Load contents failed:", error);
       },
     );
-
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 30000);
     return () => {
       unsubscribeUsers();
       unsubscribeContents();
+      clearInterval(timer);
     };
   }, []);
 
@@ -49,9 +53,38 @@ function AdminDashboard() {
   // จะถือว่า user ที่มี isOnline === true คือ Online
   // เดี๋ยวเราค่อยทำระบบ Online จริงในขั้นต่อไป
   const onlineUsers = useMemo(() => {
-    return users.filter((user) => user.isOnline === true);
-  }, [users]);
+    const ONLINE_TIMEOUT = 2 * 60 * 1000;
 
+    return users.filter((user) => {
+      const role = String(user.role ?? "")
+        .trim()
+        .toLowerCase();
+
+      if (role !== "teacher") return false;
+
+      if (user.isOnline === false) return false;
+
+      if (!user.lastSeenAt) return false;
+
+      let lastSeenDate;
+
+      if (typeof user.lastSeenAt?.toDate === "function") {
+        lastSeenDate = user.lastSeenAt.toDate();
+      } else if (user.lastSeenAt?.seconds) {
+        lastSeenDate = new Date(user.lastSeenAt.seconds * 1000);
+      } else {
+        lastSeenDate = new Date(user.lastSeenAt);
+      }
+
+      if (Number.isNaN(lastSeenDate.getTime())) {
+        return false;
+      }
+
+      const timeDifference = now - lastSeenDate.getTime();
+
+      return timeDifference <= ONLINE_TIMEOUT;
+    });
+  }, [users, now]);
   const totalTeachers = useMemo(() => {
     return users.filter(
       (user) =>
