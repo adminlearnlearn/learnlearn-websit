@@ -52,39 +52,43 @@ function AdminDashboard() {
   // ชั่วคราว:
   // จะถือว่า user ที่มี isOnline === true คือ Online
   // เดี๋ยวเราค่อยทำระบบ Online จริงในขั้นต่อไป
+  // const onlineUsers = useMemo(() => {
+  //   const ONLINE_TIMEOUT = 2 * 60 * 1000;
+
+  //   return users.filter((user) => {
+  //     const role = String(user.role ?? "")
+  //       .trim()
+  //       .toLowerCase();
+
+  //     if (role !== "teacher") return false;
+
+  //     if (user.isOnline === false) return false;
+
+  //     if (!user.lastSeenAt) return false;
+
+  //     let lastSeenDate;
+
+  //     if (typeof user.lastSeenAt?.toDate === "function") {
+  //       lastSeenDate = user.lastSeenAt.toDate();
+  //     } else if (user.lastSeenAt?.seconds) {
+  //       lastSeenDate = new Date(user.lastSeenAt.seconds * 1000);
+  //     } else {
+  //       lastSeenDate = new Date(user.lastSeenAt);
+  //     }
+
+  //     if (Number.isNaN(lastSeenDate.getTime())) {
+  //       return false;
+  //     }
+
+  //     const timeDifference = now - lastSeenDate.getTime();
+
+  //     return timeDifference <= ONLINE_TIMEOUT;
+  //   });
+  // }, [users, now]);
   const onlineUsers = useMemo(() => {
-    const ONLINE_TIMEOUT = 2 * 60 * 1000;
+  return users.filter((user) => user.isOnline === true);
+}, [users]);
 
-    return users.filter((user) => {
-      const role = String(user.role ?? "")
-        .trim()
-        .toLowerCase();
-
-      if (role !== "teacher") return false;
-
-      if (user.isOnline === false) return false;
-
-      if (!user.lastSeenAt) return false;
-
-      let lastSeenDate;
-
-      if (typeof user.lastSeenAt?.toDate === "function") {
-        lastSeenDate = user.lastSeenAt.toDate();
-      } else if (user.lastSeenAt?.seconds) {
-        lastSeenDate = new Date(user.lastSeenAt.seconds * 1000);
-      } else {
-        lastSeenDate = new Date(user.lastSeenAt);
-      }
-
-      if (Number.isNaN(lastSeenDate.getTime())) {
-        return false;
-      }
-
-      const timeDifference = now - lastSeenDate.getTime();
-
-      return timeDifference <= ONLINE_TIMEOUT;
-    });
-  }, [users, now]);
   const totalTeachers = useMemo(() => {
     return users.filter(
       (user) =>
@@ -120,6 +124,41 @@ function AdminDashboard() {
       );
     }).length;
   }, [users]);
+  const formatLastSeen = (value) => {
+    if (!value) return "-";
+
+    let date;
+
+    if (typeof value?.toDate === "function") {
+      date = value.toDate();
+    } else if (value?.seconds) {
+      date = new Date(value.seconds * 1000);
+    } else {
+      date = new Date(value);
+    }
+
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return date.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+  const formatCurrentPage = (path) => {
+    if (!path) return "-";
+
+    if (path === "/home") return "Home";
+
+    if (path.includes("/learning")) {
+      return "Learning Content";
+    }
+
+    if (path.includes("/theme")) {
+      return "Theme";
+    }
+
+    return path;
+  };
 
   const contentSummary = useMemo(() => {
     const summary = {
@@ -203,6 +242,94 @@ function AdminDashboard() {
                 )}
               </div>
             </button>
+            <div
+              className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                showOnlineUsers
+                  ? "max-h-[500px] opacity-100"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="border-t border-gray-100 px-6 pb-6 pt-4">
+                {onlineUsers.length === 0 ? (
+                  <div className="py-10 text-center">
+                    <p className="text-sm text-gray-400">No users online</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-gray-100">
+                    <table className="w-full min-w-[700px] text-left text-sm">
+                      <thead className="bg-gray-50 text-gray-500">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">Teacher</th>
+
+                          <th className="px-4 py-3 font-medium">School</th>
+
+                          <th className="px-4 py-3 font-medium">
+                            Current Page
+                          </th>
+
+                          <th className="px-4 py-3 font-medium">Last Seen</th>
+
+                          <th className="px-4 py-3 text-center font-medium">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody className="divide-y divide-gray-100">
+                        {onlineUsers.map((user) => (
+                          <tr
+                            key={user.id}
+                            className="transition hover:bg-gray-50"
+                          >
+                            {/* Teacher */}
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <span className="h-2.5 w-2.5 flex-none rounded-full bg-green-500" />
+
+                                <div>
+                                  <p className="font-semibold text-gray-800">
+                                    {user.name ||
+                                      user.username ||
+                                      "Unnamed User"}
+                                  </p>
+
+                                  <p className="text-xs text-gray-400">
+                                    {user.email || ""}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* School */}
+                            <td className="px-4 py-4 text-gray-600">
+                              {user.school || "-"}
+                            </td>
+
+                            {/* Current Page */}
+                            <td className="px-4 py-4 text-gray-600">
+                              {formatCurrentPage(user.currentPath)}
+                            </td>
+
+                            {/* Last Seen */}
+                            <td className="px-4 py-4 text-gray-500">
+                              {formatLastSeen(user.lastSeenAt)}
+                            </td>
+
+                            {/* Status */}
+                            <td className="px-4 py-4 text-center">
+                              <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600">
+                                <span className="h-2 w-2 rounded-full bg-green-500" />
+                                Online
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* User Summary */}
             {!showOnlineUsers && (
