@@ -35,7 +35,7 @@ function ViewContentModal({ content, onClose }) {
         {(content.type === "story" || content.type === "song") && (
           <video
             controls
-            src={content.fileUrl}
+            src={content.contentUrl}
             className="w-full rounded-2xl bg-black"
           />
         )}
@@ -43,7 +43,7 @@ function ViewContentModal({ content, onClose }) {
         {/* Worksheet */}
         {content.type === "worksheet" && (
           <iframe
-            src={content.fileUrl}
+            src={content.contentUrl}
             title={content.title}
             className="h-[75vh] w-full rounded-2xl"
           />

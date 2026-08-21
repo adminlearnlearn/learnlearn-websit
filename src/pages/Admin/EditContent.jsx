@@ -13,7 +13,7 @@ import { db } from "../../firebase";
 import FormError from "../../components/common/FormError";
 
 function EditContent() {
-  const [fileUrl, setFileUrl] = useState("");
+  const [contentUrl, setcontentUrl] = useState("");
   const { contentId } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -87,7 +87,7 @@ function EditContent() {
     if (!selectedSubTheme) newErrors.subTheme = "Please select sub theme";
     if (!type) newErrors.type = "Please select content type";
     if (!status) newErrors.status = "Please select status";
-    if (!fileUrl.trim()) newErrors.fileUrl = "Please enter content file URL";
+    if (!contentUrl.trim()) newErrors.contentUrl = "Please enter content file URL";
 
     setErrors(newErrors);
 
@@ -98,7 +98,7 @@ function EditContent() {
       status,
       themeId: selectedTheme,
       subThemeId: selectedSubTheme,
-      fileUrl,
+      contentUrl,
       showNote,
       note: showNote ? note : "",
     });
@@ -226,12 +226,12 @@ function EditContent() {
         </label>
 
         <input
-          value={fileUrl}
-          onChange={(e) => setFileUrl(e.target.value)}
+          value={contentUrl}
+          onChange={(e) => setcontentUrl(e.target.value)}
           placeholder="/files/story1.mp4 or https://..."
           className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none focus:border-blue-500"
         />
-        <FormError message={errors.fileUrl} />
+        <FormError message={errors.contentUrl} />
       </div>
       <div className="mt-8 flex justify-end gap-3">
         <button

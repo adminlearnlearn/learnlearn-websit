@@ -95,7 +95,7 @@ function ContentManagement() {
     setContents((prev) => prev.filter((content) => content.id !== contentId));
   };
 
-  const handleSave = async ({ contentFile, showNote, note }) => {
+  const handleSave = async ({ contentUrl, showNote, note }) => {
     // console.log("SAVE CLICK");
     if (!contentTitle.trim()) {
       alert("Please enter content title");
@@ -121,7 +121,7 @@ function ContentManagement() {
           subThemes.find((sub) => sub.id === selectedSubTheme)?.name || "",
         showNote,
         note: showNote ? note : "",
-        fileUrl: fileUrl.trim(),
+        contentUrl: contentUrl.trim(),
         createdAt: serverTimestamp(),
         status: "published",
       });
