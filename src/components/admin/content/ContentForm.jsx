@@ -1,11 +1,21 @@
 import { useState } from "react";
-import UploadBox from "./UploadBox";
+// import UploadBox from "./UploadBox";
 import ThemeModal from "./ThemeModal";
 import SubThemeModal from "./SubThemeModal";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { Pencil } from "lucide-react";
 import FormError from "../../common/FormError";
+
+const isValidUrl = (value) => {
+  try {
+    const url = new URL(value.trim());
+
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+};
 
 function ContentForm({
   contentTitle,
@@ -24,7 +34,7 @@ function ContentForm({
   handleAddTheme,
   handleAddSubTheme,
 }) {
-  const [contentFile, setContentFile] = useState(null);
+  // const [contentFile, setContentFile] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isSubThemeModalOpen, setIsSubThemeModalOpen] = useState(false);
@@ -40,6 +50,9 @@ function ContentForm({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const currentTheme = themes.find((t) => t.id === selectedTheme);
   const currentSubTheme = subThemes.find((t) => t.id === selectedSubTheme);
+  const [contentUrl, setContentUrl] = useState("");
+  const canPreview = isValidUrl(contentUrl);
+
   const handleUpdateTheme = async () => {
     if (!selectedTheme || !editThemeName.trim()) return;
 
@@ -84,12 +97,14 @@ function ContentForm({
             <label className="block text-sm font-medium text-gray-600 mb-1">
               Content Title
             </label>
+
             <input
               className="h-11 w-full rounded-xl border border-gray-300 px-4 focus:border-blue-500 outline-none"
               placeholder="Enter content title"
               value={contentTitle}
               onChange={(e) => {
                 setContentTitle(e.target.value);
+
                 if (errors.title) {
                   setErrors((prev) => ({
                     ...prev,
@@ -225,7 +240,19 @@ function ContentForm({
                 <select
                   className="h-11 w-full rounded-xl border border-gray-300 px-3 pr-14"
                   value={contentType}
-                  onChange={(e) => setContentType(e.target.value)}
+                  onChange={(e) => {
+                    const nextType = e.target.value;
+
+                    setContentType(nextType);
+                    setShowPreview(false);
+
+                    setErrors((prev) => ({
+                      ...prev,
+                      type: "",
+                      file: "",
+                      embedUrl: "",
+                    }));
+                  }}
                 >
                   <option value="">Select</option>
                   <option value="story">Story</option>
@@ -260,55 +287,90 @@ function ContentForm({
           </div>
         </div>
 
-        {/* UploadBox */}
+        {/* Content Source */}
         <div className="mt-10 mb-6">
-          <div className="flex justify-center">
-            <UploadBox
-              contentFile={contentFile}
-              setContentFile={setContentFile}
+          <div className="mx-auto w-full max-w-3xl">
+            <label className="mb-2 block text-sm font-medium text-gray-600">
+              Content URL
+            </label>
+
+            <input
+              type="url"
+              value={contentUrl}
+              onChange={(e) => {
+                setContentUrl(e.target.value);
+
+                if (errors.contentUrl) {
+                  setErrors((prev) => ({
+                    ...prev,
+                    contentUrl: "",
+                  }));
+                }
+              }}
+              placeholder="https://example.com/embed/..."
+              className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none focus:border-blue-500"
             />
+
+            <p className="mt-2 text-xs text-gray-400">
+              Enter a URL that supports embedding in an iframe.
+            </p>
+
+            <FormError message={errors.contentUrl} />
           </div>
-          <FormError message={errors.file} />
         </div>
 
         {/* buutton */}
         <div className="flex flex-col sm:flex-row justify-end gap-4">
           <button
             type="button"
-            onClick={() => {
+            onClick={async () => {
               const newErrors = {};
+              const cleanContentUrl = contentUrl.trim();
 
               if (!contentTitle.trim()) {
                 newErrors.title = "Please enter content title";
               }
+
               if (!selectedTheme) {
                 newErrors.theme = "Please select theme";
               }
+
               if (!selectedSubTheme) {
                 newErrors.subTheme = "Please select sub theme";
               }
+
               if (!contentType) {
                 newErrors.type = "Please select content type";
               }
 
-              if (!contentFile) {
-                newErrors.file = "Please upload content file";
+              if (!cleanContentUrl) {
+                newErrors.contentUrl = "Please enter content URL";
+              } else if (!isValidUrl(cleanContentUrl)) {
+                newErrors.contentUrl =
+                  "Please enter a valid URL starting with https://";
               }
 
               setErrors(newErrors);
 
               if (Object.keys(newErrors).length > 0) return;
 
-              handleSave({
-                contentFile,
-                showNote,
-                note,
-              });
-              setShowSuccessModal(true);
+              try {
+                await handleSave({
+                  contentUrl: contentUrl.trim(),
+                  showNote,
+                  note: showNote ? note.trim() : "",
+                });
+              } catch (error) {
+                console.error("Save content failed:", error);
+
+                setErrors((prev) => ({
+                  ...prev,
+                  submit: "Unable to save content. Please try again.",
+                }));
+              }
             }}
             className="btn-primary"
             data-testid="save-draft-btn"
-            
           >
             <span>Save Draft</span>
           </button>
@@ -316,11 +378,11 @@ function ContentForm({
           <button
             type="button"
             data-testid="preview-content-btn"
-            disabled={!contentFile}
+            disabled={!canPreview}
             onClick={() => setShowPreview(true)}
             className={`px-6 py-3 rounded-xl border btn-secondary
             ${
-              contentFile
+              canPreview
                 ? "bg-white hover:bg-gray-50"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"
             }`}
@@ -334,35 +396,28 @@ function ContentForm({
         </div>
       </div>
       {/* Preview Modal */}
-      {showPreview && contentFile && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <h2 className="text-xl font-semibold">Preview Content</h2>
-          <div className="bg-white p-4 rounded-2xl  w-[95vw] max-w-5xl">
-            {/* Image Preview */}
-            {contentFile.type.startsWith("image/") && (
-              <img
-                src={URL.createObjectURL(contentFile)}
-                alt="preview"
-                className="w-full max-h-[80vh] object-contain rounded-xl"
-              />
-            )}
-            {/* PDF Preview */}
-            {contentFile.type === "application/pdf" && (
-              <iframe
-                src={URL.createObjectURL(contentFile)}
-                title="PDF Preview"
-                className="w-full h-[85vh] rounded-xl"
-              />
-            )}
+      {showPreview && canPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-[95vw] max-w-5xl rounded-2xl bg-white p-4">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Preview Content</h2>
 
-            <div className="flex justify-end mb-3">
               <button
+                type="button"
                 onClick={() => setShowPreview(false)}
-                className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg"
+                className="rounded-lg bg-red-500 px-4 py-2 text-white"
               >
                 Close
               </button>
             </div>
+
+            <iframe
+              src={contentUrl.trim()}
+              title={contentTitle || "Content preview"}
+              className="h-[75vh] min-h-[500px] w-full rounded-xl border"
+              allow="fullscreen; autoplay; clipboard-write"
+              allowFullScreen
+            />
           </div>
         </div>
       )}

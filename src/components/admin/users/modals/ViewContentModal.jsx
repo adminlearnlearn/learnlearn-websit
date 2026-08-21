@@ -27,15 +27,12 @@ function ViewContentModal({ content, onClose }) {
         {/* Note */}
         {content.showNote && content.note && (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
-            <p className="text-sm font-medium text-red-600">
-              {content.note}
-            </p>
+            <p className="text-sm font-medium text-red-600">{content.note}</p>
           </div>
         )}
 
         {/* Story / Song */}
-        {(content.type === "story" ||
-          content.type === "song") && (
+        {(content.type === "story" || content.type === "song") && (
           <video
             controls
             src={content.fileUrl}
@@ -54,21 +51,25 @@ function ViewContentModal({ content, onClose }) {
 
         {/* Game */}
         {content.type === "game" && (
-          <div className="flex h-[300px] items-center justify-center">
-            <a
-              href={content.fileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-2xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
-            >
-              Open Game
-            </a>
+          <div className="overflow-hidden rounded-2xl border border-gray-200">
+            {content.contentUrl ? (
+              <iframe
+                src={content.contentUrl}
+                title={content.title || "Game"}
+                className="h-[70vh] min-h-[500px] w-full"
+                allow="fullscreen; autoplay; clipboard-write"
+                allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            ) : (
+              <div className="flex h-[350px] items-center justify-center text-gray-400">
+                Game URL not found
+              </div>
+            )}
           </div>
         )}
       </div>
-      
     </div>
-    
   );
 }
 

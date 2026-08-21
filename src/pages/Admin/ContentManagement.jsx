@@ -121,6 +121,7 @@ function ContentManagement() {
           subThemes.find((sub) => sub.id === selectedSubTheme)?.name || "",
         showNote,
         note: showNote ? note : "",
+        fileUrl: fileUrl.trim(),
         createdAt: serverTimestamp(),
         status: "published",
       });

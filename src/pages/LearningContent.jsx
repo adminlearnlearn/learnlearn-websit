@@ -33,13 +33,16 @@ function LearningContent() {
     );
   }
 
+  const gameUrl = content?.contentUrl?.trim() || content?.fileUrl?.trim() || "";
   return (
     <main className="rounded-[2.5rem] bg-white p-10 min-h-[calc(100vh-120px)]">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate(`/themes/${themeId}/subthemes/${subThemeId}`)}
+            onClick={() =>
+              navigate(`/themes/${themeId}/subthemes/${subThemeId}`)
+            }
             className="rounded-full p-2 hover:bg-gray-100"
           >
             <ChevronLeft size={32} />
@@ -57,9 +60,7 @@ function LearningContent() {
 
         {content.showNote && content.note && (
           <div className="mb-8 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
-            <p className="text-sm font-semibold text-red-600">
-              {content.note}
-            </p>
+            <p className="text-sm font-semibold text-red-600">{content.note}</p>
           </div>
         )}
 
@@ -81,20 +82,21 @@ function LearningContent() {
           )}
 
           {content.type === "game" && (
-            <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
-              <p className="text-lg font-semibold text-gray-700">
-                Click below to start the game
-              </p>
-
-              <a
-                href={content.fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700"
-              >
-                Start Game
-                <ExternalLink size={18} />
-              </a>
+            <div className="overflow-hidden rounded-2xl border border-gray-200">
+              {gameUrl ? (
+                <iframe
+                  src={gameUrl}
+                  title={content.title || "Game"}
+                  className="h-[70vh] min-h-[500px] w-full"
+                  allow="fullscreen; autoplay; clipboard-write"
+                  allowFullScreen
+                  referrerPolicy="strict-origin-when-cross-origin"
+                />
+              ) : (
+                <div className="flex h-[350px] items-center justify-center text-gray-400">
+                  Game URL not found
+                </div>
+              )}
             </div>
           )}
         </div>

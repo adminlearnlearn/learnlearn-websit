@@ -29,39 +29,61 @@ function UserManagement() {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState("");
 
+  const selectedUser = users.find((user) => user.id === selectedUserId) ?? null;
+
   const handleDeactivate = async () => {
-    await handleDeactivateUser(selectedUser.id);
+    if (!selectedUser) return;
 
-    setSuccessMessage("Account deactivated successfully.");
-    setIsDeactivateModalOpen(false);
-    setShowSuccessModal(true);
-  };
-  const handleUpdateUser = async (updatedUser) => {
+    const userId = selectedUser.id;
+
     try {
-      const userRef = doc(db, "users", updatedUser.id);
-
-      await updateDoc(userRef, {
-        name: updatedUser.name,
-        email: updatedUser.email,
-        school: updatedUser.school,
-        isLocked: false,
-        failedLoginCount: 0,
-        status: "active",
+      await updateDoc(doc(db, "users", userId), {
+        status: "inactive",
       });
 
       setUsers((prev) =>
-        prev.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
+        prev.map((user) =>
+          user.id === userId ? { ...user, status: "inactive" } : user,
+        ),
       );
 
-      setSelectedUser(updatedUser);
+      setIsDeactivateModalOpen(false);
+      setSuccessMessage("Account deactivated successfully.");
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Deactivate user error:", error);
+      alert("Cannot deactivate user");
+    }
+  };
+  const handleUpdateUser = async (updatedUser) => {
+    const updatedData = {
+      name: updatedUser.name,
+      email: updatedUser.email,
+      school: updatedUser.school,
+      isLocked: false,
+      failedLoginCount: 0,
+      status: "active",
+    };
+
+    try {
+      const userRef = doc(db, "users", updatedUser.id);
+
+      await updateDoc(userRef, updatedData);
+
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === updatedUser.id ? { ...user, ...updatedData } : user,
+        ),
+      );
 
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error(error);
+      console.error("Update user error:", error);
+      alert("Cannot update user");
     }
   };
   useEffect(() => {
@@ -143,6 +165,13 @@ function UserManagement() {
     }
   };
   const handleResetAccount = async (userId) => {
+    const updatedData = {
+      failedLoginCount: 0,
+      isLocked: false,
+      status: "active",
+      tempPassword: null,
+      mustChangePassword: true,
+    };
     try {
       const userRef = doc(db, "users", userId);
 
@@ -166,6 +195,7 @@ function UserManagement() {
             : user,
         ),
       );
+
       setSuccessMessage("Account reset successfully.");
       setShowSuccessModal(true);
     } catch (error) {
@@ -174,6 +204,19 @@ function UserManagement() {
     }
   };
   const handleDeactivateUser = async (userId) => {
+    await handleDeactivateUser(userId);
+    if (!selectedUser) return;
+
+    try {
+      await handleDeactivateUser(selectedUser.id);
+
+      setSuccessMessage("Account deactivated successfully.");
+      setIsDeactivateModalOpen(false);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Deactivate user error:", error);
+      alert("Cannot deactivate user");
+    }
     const userRef = doc(db, "users", userId);
 
     await updateDoc(userRef, {
@@ -185,8 +228,6 @@ function UserManagement() {
         user.id === userId ? { ...user, status: "inactive" } : user,
       ),
     );
-
-    setSelectedUser((prev) => (prev ? { ...prev, status: "inactive" } : prev));
   };
   const generatePassword = () => {
     const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -214,44 +255,34 @@ function UserManagement() {
     setGeneratedPassword(password);
   };
   const handleSaveGeneratedPassword = async () => {
-    const userRef = doc(db, "users", selectedUser.id);
+    if (!selectedUser || !generatedPassword) return;
 
-    await updateDoc(userRef, {
-      name: selectedUser.name,
+    const updatedData = {
       tempPassword: generatedPassword,
       mustChangePassword: true,
       isLocked: false,
       failedLoginCount: 0,
       status: "active",
-    });
+    };
 
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === selectedUser.id
-          ? {
-              ...user,
-              tempPassword: generatedPassword,
-              mustChangePassword: true,
-              isLocked: false,
-              failedLoginCount: 0,
-              status: "active",
-            }
-          : user,
-      ),
-    );
+    try {
+      const userRef = doc(db, "users", selectedUser.id);
 
-    setSelectedUser((prev) => ({
-      ...prev,
-      tempPassword: generatedPassword,
-      mustChangePassword: true,
-      isLocked: false,
-      failedLoginCount: 0,
-      status: "active",
-    }));
+      await updateDoc(userRef, updatedData);
 
-    setShowGenerateModal(false);
-    setSuccessMessage("Password generated successfully.");
-    setShowSuccessModal(true);
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === selectedUser.id ? { ...user, ...updatedData } : user,
+        ),
+      );
+
+      setShowGenerateModal(false);
+      setSuccessMessage("Password generated successfully.");
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Generate password error:", error);
+      alert("Cannot save generated password");
+    }
   };
 
   return (
@@ -288,7 +319,7 @@ function UserManagement() {
         <UserTable
           users={filteredUsers}
           onAddUser={() => setIsAddModalOpen(true)}
-          onSelectUser={setSelectedUser}
+          onSelectUser={(user) => setSelectedUserId(user.id)}
           searchText={searchText}
           setSearchText={setSearchText}
           statusFilter={statusFilter}

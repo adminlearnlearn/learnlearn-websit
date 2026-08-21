@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "learnlearn-f3e11"
+  },
+  "targets": {
+    "learnlearn-f3e11": {
+      "hosting": {
+        "sit": [
+          "learnlearn-sit"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

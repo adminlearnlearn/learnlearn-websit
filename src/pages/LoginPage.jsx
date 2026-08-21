@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+
 import {
   collection,
   getDocs,
@@ -18,8 +19,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+
   const MAX_FAILED_LOGIN = 3;
-  const location = useLocation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,6 +31,7 @@ function LoginPage() {
         collection(db, "users"),
         where("email", "==", email.trim()),
       );
+
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
@@ -38,6 +40,7 @@ function LoginPage() {
       }
 
       const userDoc = snapshot.docs[0];
+
       const user = {
         id: userDoc.id,
         ...userDoc.data(),
@@ -48,17 +51,14 @@ function LoginPage() {
         return;
       }
 
-      if (user.isLocked || user.failedLoginCount >= 3) {
-        await updateDoc(doc(db, "users", user.id), {
-          isLocked: true,
-          failedLoginCount: 3,
-          status: "inactive",
-        });
+      if (user.isLocked || user.failedLoginCount >= MAX_FAILED_LOGIN) {
+        await lockAccount(user.id);
 
         setError("This account is locked. Please contact admin.");
         return;
       }
 
+      // รหัสชั่วคราว
       if (user.mustChangePassword && password === user.tempPassword) {
         await updateDoc(doc(db, "users", user.id), {
           failedLoginCount: 0,
@@ -71,51 +71,64 @@ function LoginPage() {
             id: user.id,
             email: user.email,
             role: user.role,
-            username: user.username,
+            name: user.name ?? user.username ?? "",
           }),
         );
+
         navigate("/change-password", {
           state: {
             userId: user.id,
             role: user.role,
           },
         });
+
         return;
       }
 
+      // รหัสปกติ
       if (!user.mustChangePassword && password === user.password) {
         await updateDoc(doc(db, "users", user.id), {
           failedLoginCount: 0,
           isLocked: false,
           lastLoginAt: new Date(),
         });
+
         localStorage.setItem(
           "currentUser",
           JSON.stringify({
             id: user.id,
             email: user.email,
             role: user.role,
-            username: user.username,
+            name: user.name ?? user.username ?? "",
           }),
         );
 
         goToHomeByRole(user);
         return;
       }
-      await increaseFailedLogin(user);
 
-      setError("Email or password is incorrect.");
+      await increaseFailedLogin(user);
     } catch (err) {
-      console.error(err);
+      console.error("Login error:", err);
       setError("Cannot login. Please try again.");
     }
   };
   const goToHomeByRole = (user) => {
-    if (user.role === "Admin") {
-      navigate("/admin/content", { replace: true });
-    } else if (user.role === "Teacher") {
-      navigate("/home", { replace: true });
+    const role = String(user.role ?? "")
+      .trim()
+      .toLowerCase();
+
+    if (role === "admin") {
+      navigate("/admin/dashboard", { replace: true });
+      return;
     }
+
+    if (role === "teacher") {
+      navigate("/home", { replace: true });
+      return;
+    }
+
+    navigate("/home", { replace: true });
   };
   const lockAccount = async (userId) => {
     await updateDoc(doc(db, "users", userId), {
@@ -124,13 +137,16 @@ function LoginPage() {
       status: "inactive",
     });
   };
+
   const increaseFailedLogin = async (user) => {
     const currentFailed = user.failedLoginCount || 0;
     const nextFailed = currentFailed + 1;
 
     if (nextFailed >= MAX_FAILED_LOGIN) {
       await lockAccount(user.id);
+
       setError("Your account has been locked. Please contact admin.");
+
       return;
     }
 
@@ -140,7 +156,6 @@ function LoginPage() {
 
     setError(`Email or password is incorrect. Attempt ${nextFailed}/3`);
   };
-
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="mx-auto grid min-h-[720px] max-w-7xl grid-cols-1 bg-white lg:grid-cols-2">
@@ -159,8 +174,14 @@ function LoginPage() {
             </h1>
 
             <div className="mb-4">
-              <label className="mb-2 block text-sm text-gray-700">Email</label>
+              <label
+                htmlFor="email"
+                className="mb-2 block text-sm text-gray-700"
+              >
+                Email
+              </label>
               <input
+                id="email"
                 type="email"
                 placeholder="email"
                 value={email}
@@ -170,11 +191,15 @@ function LoginPage() {
             </div>
 
             <div className="mb-5">
-              <label className="mb-2 block text-sm text-gray-700">
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm text-gray-700"
+              >
                 Password
               </label>
               <div className="relative">
                 <input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="password"
                   value={password}
@@ -191,7 +216,10 @@ function LoginPage() {
               </div>
             </div>
 
-            <label className="mb-8 flex items-center gap-2 text-sm text-gray-600">
+            <label
+              htmlFor="rememberMe"
+              className="mb-8 flex items-center gap-2 text-sm text-gray-600"
+            >
               <input
                 type="checkbox"
                 checked={rememberMe}

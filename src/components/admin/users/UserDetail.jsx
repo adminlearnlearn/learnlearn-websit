@@ -18,7 +18,13 @@ const formatDate = (value) => {
   return value;
 };
 
-function UserDetail({ user, onEdit, onResetAccount, onDeactivateUser , onGeneratePassword}) {
+function UserDetail({
+  user,
+  onEdit,
+  onResetAccount,
+  onDeactivateUser,
+  onGeneratePassword,
+}) {
   if (!user) {
     return (
       <div className=" bg-white shadow-md border border-gray-100 p-6 min-h-[620px] flex items-center justify-center text-gray-400 text-center">
@@ -26,6 +32,15 @@ function UserDetail({ user, onEdit, onResetAccount, onDeactivateUser , onGenerat
       </div>
     );
   }
+  const normalizedStatus = String(user.status ?? "")
+    .trim()
+    .toLowerCase();
+  const canResetAccount =
+    String(user.status ?? "")
+      .trim()
+      .toLowerCase() === "inactive";
+  const canDeactivateUser = normalizedStatus === "active";
+  const displayName = user.name ?? user.username ?? "Unknown User";
   return (
     <div className="bg-white shadow-md border border-gray-100 p-4 grid-cols-[1fr_320px] min-h-[620px]">
       <h2 className="font-bold text-lg mb-6">User Details</h2>
@@ -63,7 +78,7 @@ function UserDetail({ user, onEdit, onResetAccount, onDeactivateUser , onGenerat
             icon={<Lock size={14} />}
             text="Reset Account"
             onClick={onResetAccount}
-            disabled={user.status === "active"}
+            disabled={!canResetAccount}
           />
           <ActionButton
             color="yellow"
@@ -75,7 +90,11 @@ function UserDetail({ user, onEdit, onResetAccount, onDeactivateUser , onGenerat
             color="red"
             icon={<Trash2 size={14} />}
             text="Deactivate User"
-            onClick={onDeactivateUser}
+            onClick={() => {
+              if (!canDeactivateUser) return;
+              onDeactivateUser();
+            }}
+            disabled={!canDeactivateUser}
           />
         </div>
       </div>
@@ -91,6 +110,5 @@ function DetailRow({ label, value }) {
     </div>
   );
 }
-
 
 export default UserDetail;
