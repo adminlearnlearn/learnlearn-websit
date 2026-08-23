@@ -33,11 +33,16 @@ function ViewContentModal({ content, onClose }) {
 
         {/* Story / Song */}
         {(content.type === "story" || content.type === "song") && (
-          <video
-            controls
-            src={content.contentUrl}
-            className="w-full rounded-2xl bg-black"
-          />
+          <div className="overflow-hidden rounded-2xl border border-gray-200">
+            <iframe
+              src={content.contentUrl}
+              title={content.title || "Video"}
+              className="aspect-video w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
         )}
 
         {/* Worksheet */}

@@ -13,7 +13,7 @@ import { db } from "../../firebase";
 import FormError from "../../components/common/FormError";
 
 function EditContent() {
-  const [contentUrl, setcontentUrl] = useState("");
+  const [contentUrl, setContentUrl] = useState("");
   const { contentId } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -42,6 +42,7 @@ function EditContent() {
         setSelectedSubTheme(data.subThemeId || "");
         setShowNote(data.showNote || false);
         setNote(data.note || "");
+        setContentUrl(data.contentUrl || "");
       }
 
       const themeList = themeSnap.docs.map((doc) => ({
@@ -93,14 +94,14 @@ function EditContent() {
 
     if (Object.keys(newErrors).length > 0) return;
     await updateDoc(doc(db, "contents", contentId), {
-      title,
+      title: title.trim(),
       type,
       status,
       themeId: selectedTheme,
       subThemeId: selectedSubTheme,
-      contentUrl,
+      contentUrl: contentUrl.trim(),
       showNote,
-      note: showNote ? note : "",
+      note: showNote ? note.trim() : "",
     });
 
     navigate("/admin/manage-content");
@@ -227,7 +228,7 @@ function EditContent() {
 
         <input
           value={contentUrl}
-          onChange={(e) => setcontentUrl(e.target.value)}
+          onChange={(e) => setContentUrl(e.target.value)}
           placeholder="/files/story1.mp4 or https://..."
           className="h-11 w-full rounded-xl border border-gray-300 px-4 outline-none focus:border-blue-500"
         />

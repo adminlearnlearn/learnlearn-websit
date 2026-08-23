@@ -6,7 +6,10 @@ import { db } from "../../firebase";
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [contents, setContents] = useState([]);
+  const [contentProgress, setContentProgress] = useState([]);
+  const [selectedTeacher, setSelectedTeacher] = useState("all");
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
+  const [showAllUsers, setShowAllUsers] = useState(false);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -39,12 +42,27 @@ function AdminDashboard() {
         console.error("Load contents failed:", error);
       },
     );
+
     const timer = setInterval(() => {
       setNow(Date.now());
     }, 30000);
+    // ✅ Content Progress
+    const unsubscribeProgress = onSnapshot(
+      collection(db, "contentProgress"),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setContentProgress(data);
+      },
+    );
+
     return () => {
       unsubscribeUsers();
       unsubscribeContents();
+      unsubscribeProgress();
       clearInterval(timer);
     };
   }, []);
@@ -86,8 +104,8 @@ function AdminDashboard() {
   //   });
   // }, [users, now]);
   const onlineUsers = useMemo(() => {
-  return users.filter((user) => user.isOnline === true);
-}, [users]);
+    return users.filter((user) => user.isOnline === true);
+  }, [users]);
 
   const totalTeachers = useMemo(() => {
     return users.filter(
@@ -144,20 +162,42 @@ function AdminDashboard() {
       minute: "2-digit",
     });
   };
-  const formatCurrentPage = (path) => {
-    if (!path) return "-";
+  const formatCurrentActivity = (user) => {
+    const type = String(user.currentContentType ?? "")
+      .trim()
+      .toLowerCase();
 
-    if (path === "/home") return "Home";
+    // ถ้ากำลังเปิด Content ให้เอาประเภท Content ขึ้นก่อน
+    if (user.currentPage === "content" && type) {
+      const contentTypes = {
+        story: "Story",
+        song: "Song",
+        worksheet: "Worksheet",
+        game: "Game",
+      };
 
-    if (path.includes("/learning")) {
-      return "Learning Content";
+      return contentTypes[type] || type;
     }
 
-    if (path.includes("/theme")) {
+    const path = String(user.currentPath ?? "");
+
+    if (path === "/home") {
+      return "Home";
+    }
+
+    if (path.includes("/contents/")) {
+      return "Content";
+    }
+
+    if (path.includes("/subthemes/")) {
+      return "Sub Theme";
+    }
+
+    if (path.includes("/themes")) {
       return "Theme";
     }
 
-    return path;
+    return "-";
   };
 
   const contentSummary = useMemo(() => {
@@ -182,6 +222,61 @@ function AdminDashboard() {
 
     return summary;
   }, [contents]);
+  const teacherProgress = useMemo(() => {
+    const teachers = users.filter(
+      (user) =>
+        String(user.role ?? "")
+          .trim()
+          .toLowerCase() === "teacher",
+    );
+
+    const totalContent = contents.length;
+
+    return teachers.map((teacher) => {
+      const teacherRecords = contentProgress.filter(
+        (progress) => progress.userId === teacher.id,
+      );
+
+      const viewedCount = teacherRecords.filter(
+        (progress) => progress.viewed === true,
+      ).length;
+
+      const completedCount = teacherRecords.filter(
+        (progress) => progress.completed === true,
+      ).length;
+
+      const percentage =
+        totalContent > 0
+          ? Math.round((completedCount / totalContent) * 100)
+          : 0;
+
+      return {
+        id: teacher.id,
+        name: teacher.name || teacher.username || "Unnamed Teacher",
+        school: teacher.school || "-",
+
+        viewedCount,
+        completedCount,
+        totalContent,
+        percentage,
+      };
+    });
+  }, [users, contents, contentProgress]);
+
+  const selectedTeacherData = teacherProgress.find(
+    (teacher) => teacher.id === selectedTeacher,
+  );
+
+  const activeUsers = useMemo(() => {
+    return users.filter(
+      (user) =>
+        String(user.status ?? "")
+          .trim()
+          .toLowerCase() === "active",
+    );
+  }, [users]);
+
+  const displayedUsers = showAllUsers ? activeUsers : onlineUsers;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -242,6 +337,7 @@ function AdminDashboard() {
                 )}
               </div>
             </button>
+
             <div
               className={`overflow-hidden transition-all duration-500 ease-in-out ${
                 showOnlineUsers
@@ -263,9 +359,7 @@ function AdminDashboard() {
 
                           <th className="px-4 py-3 font-medium">School</th>
 
-                          <th className="px-4 py-3 font-medium">
-                            Current Page
-                          </th>
+                          <th className="px-4 py-3 font-medium">Activity</th>
 
                           <th className="px-4 py-3 font-medium">Last Seen</th>
 
@@ -274,60 +368,94 @@ function AdminDashboard() {
                           </th>
                         </tr>
                       </thead>
-
                       <tbody className="divide-y divide-gray-100">
-                        {onlineUsers.map((user) => (
-                          <tr
-                            key={user.id}
-                            className="transition hover:bg-gray-50"
-                          >
-                            {/* Teacher */}
-                            <td className="px-4 py-4">
-                              <div className="flex items-center gap-3">
-                                <span className="h-2.5 w-2.5 flex-none rounded-full bg-green-500" />
+                        {displayedUsers.map((user) => {
+                          const isUserOnline = onlineUsers.some(
+                            (onlineUser) => onlineUser.id === user.id,
+                          );
 
-                                <div>
-                                  <p className="font-semibold text-gray-800">
-                                    {user.name ||
-                                      user.username ||
-                                      "Unnamed User"}
-                                  </p>
+                          return (
+                            <tr
+                              key={user.id}
+                              onClick={() => setSelectedTeacher(user.id)}
+                              className={`cursor-pointer transition ${
+                                selectedTeacher === user.id
+                                  ? "bg-indigo-50"
+                                  : "hover:bg-gray-50"
+                              }`}
+                            >
+                              {/* Teacher */}
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                  <span
+                                    className={`h-2.5 w-2.5 flex-none rounded-full ${
+                                      isUserOnline
+                                        ? "bg-green-500"
+                                        : "bg-gray-300"
+                                    }`}
+                                  />
 
-                                  <p className="text-xs text-gray-400">
-                                    {user.email || ""}
-                                  </p>
+                                  <div>
+                                    <p className="font-semibold text-gray-800">
+                                      {user.name ||
+                                        user.username ||
+                                        "Unnamed User"}
+                                    </p>
+
+                                    <p className="text-xs text-gray-400">
+                                      {user.email || ""}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
+                              </td>
 
-                            {/* School */}
-                            <td className="px-4 py-4 text-gray-600">
-                              {user.school || "-"}
-                            </td>
+                              {/* School */}
+                              <td className="px-4 py-4 text-gray-600">
+                                {user.school || "-"}
+                              </td>
 
-                            {/* Current Page */}
-                            <td className="px-4 py-4 text-gray-600">
-                              {formatCurrentPage(user.currentPath)}
-                            </td>
+                              {/* Activity */}
+                              <td className="px-4 py-4 text-gray-600">
+                                {formatCurrentActivity(user) === "-"
+                                  ? "-"
+                                  : `On ${formatCurrentActivity(user)}`}
+                              </td>
 
-                            {/* Last Seen */}
-                            <td className="px-4 py-4 text-gray-500">
-                              {formatLastSeen(user.lastSeenAt)}
-                            </td>
+                              {/* Last Seen */}
+                              <td className="px-4 py-4 text-gray-500">
+                                {formatLastSeen(user.lastSeenAt)}
+                              </td>
 
-                            {/* Status */}
-                            <td className="px-4 py-4 text-center">
-                              <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600">
-                                <span className="h-2 w-2 rounded-full bg-green-500" />
-                                Online
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
+                              {/* Status */}
+                              <td className="px-4 py-4 text-center">
+                                {isUserOnline ? (
+                                  <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600">
+                                    <span className="h-2 w-2 rounded-full bg-green-500" />
+                                    Online
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
+                                    <span className="h-2 w-2 rounded-full bg-gray-400" />
+                                    Offline
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
                 )}
+              </div>
+              <div className="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowAllUsers((prev) => !prev)}
+                  className="text-sm font-medium text-indigo-600 transition hover:text-indigo-700 hover:underline"
+                >
+                  {showAllUsers ? "Show Online Only" : "View All Users"}
+                </button>
               </div>
             </div>
 
@@ -387,20 +515,28 @@ function AdminDashboard() {
 
       {/* Teaching Progress */}
       <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">
               Teaching Progress
             </h2>
 
-            <p className="mt-1 text-sm text-gray-400">
-              Teacher content completion progress
-            </p>
+            {selectedTeacher !== "all" && (
+              <button
+                type="button"
+                onClick={() => setSelectedTeacher("all")}
+                className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-200"
+              >
+                View All
+              </button>
+            )}
           </div>
 
-          <select className="rounded-xl border border-gray-200 px-4 py-2 text-sm outline-none">
-            <option>All Teachers</option>
-          </select>
+          {selectedTeacherData && (
+            <p className="mt-1 text-sm text-gray-400">
+              {selectedTeacherData.name}
+            </p>
+          )}
         </div>
 
         {/* ยังไม่มี Tracking จริง */}
